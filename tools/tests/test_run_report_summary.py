@@ -311,6 +311,37 @@ class RunReportSummaryTests(unittest.TestCase):
                     self.assertEqual(result.stdout, "")
                     self.assertIn("run_report_summary:", result.stderr)
 
+    def test_string_coverage_flags_are_rejected(self):
+        for flag in ("milestones", "missing", "shaders", "unsupported"):
+            for value in ("false", "true", "0", "1"):
+                with self.subTest(flag=flag, value=value):
+                    report = self.report("stop-none.json")
+                    report["coverage"][flag] = value
+                    with self.assertRaisesRegex(ValueError, f"coverage.{flag}.*boolean"):
+                        render(report)
+
+    def test_non_boolean_coverage_flags_are_rejected(self):
+        for flag in ("milestones", "missing", "shaders", "unsupported"):
+            for value in (0, 1, None):
+                with self.subTest(flag=flag, value=value):
+                    report = self.report("stop-none.json")
+                    report["coverage"][flag] = value
+                    with self.assertRaisesRegex(ValueError, f"coverage.{flag}.*boolean"):
+                        render(report)
+
+    def test_boolean_coverage_flags_are_accepted(self):
+        report = self.report("stop-none.json")
+        report["coverage"].update(milestones=True, missing=True, shaders=True, unsupported=True)
+        summary = render(report)
+        self.assertNotIn("not collected", summary)
+
+    def test_absent_coverage_flags_are_accepted(self):
+        report = self.report("stop-none.json")
+        for flag in ("milestones", "missing", "shaders", "unsupported"):
+            report["coverage"].pop(flag, None)
+        summary = render(report)
+        self.assertIn("not collected", summary)
+
 
 if __name__ == "__main__":
     unittest.main()

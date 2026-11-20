@@ -46,6 +46,9 @@ def render(report):
     system = report["system"]
     run = report["run"]
     coverage = report["coverage"]
+    for flag in ("milestones", "missing", "shaders", "unsupported"):
+        if flag in coverage and type(coverage[flag]) is not bool:
+            raise ValueError(f"report field 'coverage.{flag}' must be a boolean")
     missing = report["missing"]
     shaders = report["shaders"]
     truncated = report["truncated"]
@@ -63,7 +66,7 @@ def render(report):
     lines.append(f"Progress: {text(run.get('stage'))} after {number_text(run.get('seconds'))} seconds")
 
     frames = run.get("framesPresented")
-    if coverage.get("milestones"):
+    if coverage.get("milestones") is True:
         frame_summary = count_text(frames, "frame") if isinstance(frames, int) and not isinstance(frames, bool) else "unknown frame count"
         fps = run.get("averageFps")
         if is_finite_number(fps):
@@ -94,7 +97,7 @@ def render(report):
         stop_summary += f": {text(stop['message'])}"
     lines.append(f"Stop: {stop_summary}")
 
-    if coverage.get("missing"):
+    if coverage.get("missing") is True:
         functions = missing.get("functions", [])
         calls = total_count(functions, "calls")
         lines.append(f"Missing functions: {count_text(calls, 'call')} across {count_text(len(functions), 'function')}")
@@ -107,11 +110,11 @@ def render(report):
     else:
         lines.append("Missing functions: not collected")
 
-    if coverage.get("shaders"):
+    if coverage.get("shaders") is True:
         lines.append(f"Shaders: {number_text(shaders.get('compiled', 0))} compiled, {count_text(shaders.get('failed', 0), 'failure')}")
     else:
         lines.append("Shaders: compilation data was not collected")
-    if coverage.get("unsupported"):
+    if coverage.get("unsupported") is True:
         unsupported = shaders.get("unsupported", [])
         total = total_count(unsupported, "count")
         lines.append(f"Unsupported shader instructions: {count_text(total, 'occurrence')} across {count_text(len(unsupported), 'instruction')}")
