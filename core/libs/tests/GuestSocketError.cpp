@@ -42,6 +42,7 @@ static constexpr ErrorCase Cases[] = {
     HostError(WSA, ENOBUFS, 55),
     HostError(WSA, EISCONN, 56),
     HostError(WSA, ENOTCONN, 57),
+    HostError(WSA, ESHUTDOWN, 58),
     HostError(WSA, ETOOMANYREFS, 59),
     HostError(WSA, ETIMEDOUT, 60),
     HostError(WSA, ECONNREFUSED, 61),
@@ -49,7 +50,6 @@ static constexpr ErrorCase Cases[] = {
     HostError(WSA, EHOSTUNREACH, 65),
 };
 static constexpr int UnmappedHost = WSAEDISCON;
-static constexpr int ShutdownHost = WSAESHUTDOWN;
 #else
 static constexpr ErrorCase Cases[] = {
     HostError(, EPERM, 1),
@@ -116,11 +116,5 @@ int main() {
             ++failures;
         }
     }
-#ifdef _WIN32
-    if (GuestSockets::GuestErrorFromHost(ShutdownHost) != 32) {
-        std::fprintf(stderr, "WSAESHUTDOWN is not EPIPE\n");
-        ++failures;
-    }
-#endif
     return failures == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
