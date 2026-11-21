@@ -484,11 +484,14 @@ void APS5_VABI _Cnd_do_broadcast_at_thread_exit_nid_postfix() noexcept {
         }
     }
     for (const auto& entry : pending) {
-        if (entry.ready) *entry.ready = 1;
-        void* condition = entry.condition;
-        _Cnd_broadcast_nid_postfix(&condition);
-        void* mutex = entry.mutex;
-        _Mtx_unlock_nid_postfix(&mutex);
+        try {
+            if (entry.ready) *entry.ready = 1;
+            void* condition = entry.condition;
+            _Cnd_broadcast_nid_postfix(&condition);
+            void* mutex = entry.mutex;
+            _Mtx_unlock_nid_postfix(&mutex);
+        } catch (...) {
+        }
     }
 }
 
