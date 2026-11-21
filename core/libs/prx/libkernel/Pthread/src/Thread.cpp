@@ -1012,8 +1012,7 @@ static void ReleaseThread(PthreadPrivate* thread) {
 #ifdef _WIN32
     if (thread->wakeEvent)
         CloseHandle(static_cast<HANDLE>(thread->wakeEvent));
-    if (!CloseHandle(thread->nativeHandle))
-        throw std::system_error(GetLastError(), std::system_category(), "Closing guest thread handle");
+    CloseHandle(thread->nativeHandle);
 #endif
     delete thread;
 }
